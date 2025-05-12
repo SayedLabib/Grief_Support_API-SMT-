@@ -1,0 +1,13 @@
+services:
+  api:
+    build: .
+    container_name: grief-support-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    restart: unless-stopped
+
+    
