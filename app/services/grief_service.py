@@ -2,12 +2,14 @@ import json
 import logging
 import re
 from app.services.llm_service import LLMService
+from app.core.config import settings
 
 log = logging.getLogger(__name__)
 
 class GriefService:
     def __init__(self):
         self.llm_service = LLMService()
+        self.gemini_api_key = settings.gemini_api_key
     
     async def analyze_and_respond(self, user_message: str):
         """

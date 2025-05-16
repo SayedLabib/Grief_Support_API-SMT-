@@ -1,12 +1,14 @@
 import json
 import logging
 from app.services.gemini_service import GeminiService
+from app.core.config import settings
 
 log = logging.getLogger(__name__)
 
 class PlannerService:
     def __init__(self):
         self.gemini_service = GeminiService()
+        self.gemini_api_key = settings.gemini_api_key
     
     async def create_daily_plan(self, user_message: str, preferences: dict = None):
         """

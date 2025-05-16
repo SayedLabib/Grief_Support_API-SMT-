@@ -2,12 +2,13 @@ import logging
 import os
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from app.core.config import settings
 
 log = logging.getLogger(__name__)
 
 class YouTubeService:
     def __init__(self):
-        self.api_key = os.getenv("YOUTUBE_API_KEY")
+        self.api_key = settings.gemini_api_key
         
     async def search_videos(self, query: str, max_results: int = 5):
         """

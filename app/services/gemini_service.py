@@ -7,6 +7,7 @@ from typing import Dict, Any, Optional
 from dotenv import load_dotenv
 
 from app.core.logging import log
+from app.core.config import settings
 
 # Load environment variables if not already loaded
 load_dotenv()
@@ -16,19 +17,18 @@ class GeminiService:
     Service class for interacting with Google's Gemini-2.0-flash API
     """
     def __init__(self):
-        # Get API key from environment variables
-        self.api_key = os.getenv("GEMINI_API_KEY")
+        self.api_key = settings.gemini_api_key
         if not self.api_key:
             log.error("GEMINI_API_KEY not found in environment variables")
             raise ValueError("GEMINI_API_KEY not configured in .env file")
-            
-        # API URL for the gemini-2.0-flash model
-        self.base_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+        # Use model from settings
+        self.model = settings.gemini_model
+        self.base_url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
         self.headers = {
             "Content-Type": "application/json",
             "x-goog-api-key": self.api_key
         }
-        log.info("GeminiService initialized with gemini-2.0-flash model")
+        log.info(f"GeminiService initialized with {self.model} model")
 
     async def generate_daily_plan(self, user_message: str, preferences: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """

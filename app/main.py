@@ -41,12 +41,10 @@ async def startup_event():
     log.info(f"API documentation available at /docs and /redoc")
     
     # Validate required API keys are set
-    if not settings.groq_api_key:
-        log.warning("GROQ_API_KEY is not set. Grief analysis functionality will be limited.")
+    # Removed groq_api_key check since it's no longer used
     if not settings.gemini_api_key:
         log.warning("GEMINI_API_KEY is not set. Day planning functionality will be limited.")
-    if not settings.youtube_api_key:
-        log.warning("YOUTUBE_API_KEY is not set. YouTube recommendations will be unavailable.")
+    # Removed youtube_api_key check since it's no longer used
 
 # Shutdown event handler
 @app.on_event("shutdown")
