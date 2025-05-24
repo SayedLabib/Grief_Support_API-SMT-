@@ -62,7 +62,7 @@ class unifiedRequest(BaseModel):
     plan_preferences: Optional[dict] = None
     
     # Media recommendation parameters (only used if include_media_recommendations is True)
-    media_type: Optional[str] = None
+    media_type: Optional[Literal["music", "videos", "inspiration", "comedy", "relaxation"]] = "music"
     max_media_results: Optional[int] = 5
 
 
