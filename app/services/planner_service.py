@@ -10,13 +10,14 @@ class PlannerService:
         self.gemini_service = GeminiService()
         self.gemini_api_key = settings.gemini_api_key
     
-    async def create_daily_plan(self, user_message: str, preferences: dict = None):
+    async def create_daily_plan(self, user_message: str, preferences: dict = None, detected_mood: str = None):
         """
-        Create a personalized daily plan based on user's grief state and preferences.
+        Create a personalized daily plan based on user's emotional state and preferences.
         
         Args:
             user_message: The user's message describing their emotional state
             preferences: Optional dict of user preferences (wake time, interests, etc.)
+            detected_mood: Optional pre-detected mood to avoid duplicate analysis
             
         Returns:
             Dictionary with daily plan structure
@@ -24,9 +25,15 @@ class PlannerService:
         if preferences is None:
             preferences = {}
             
+        # Detect mood if not provided
+        if detected_mood:
+            mood_context = f"The person is feeling {detected_mood} and shared: "
+        else:
+            mood_context = ""
+            
         # Build prompt for Gemini model
         prompt = f"""
-        Create a supportive daily plan for someone experiencing grief who shared:
+        Create a supportive daily plan for someone who {mood_context}shared:
         "{user_message}"
         
         User preferences: {json.dumps(preferences)}

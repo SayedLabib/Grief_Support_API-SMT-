@@ -12,7 +12,7 @@ class MediaService:
         self.youtube_service = YouTubeService()
         self.tavily_api_key = settings.tavily_api_key
     
-    async def get_mood_based_recommendations(self, user_message: str, media_type: str, max_results: int = 5):
+    async def get_mood_based_recommendations(self, user_message: str, media_type: str = None, max_results: int = 5, detected_mood: str = None):
         """
         Get media recommendations based on user's mood using Tavily API for music
         
@@ -20,6 +20,7 @@ class MediaService:
             user_message: User's message to analyze for mood
             media_type: Type of media to recommend (music, videos, etc)
             max_results: Maximum number of results to return
+            detected_mood: Optional pre-detected mood to avoid duplicate analysis
             
         Returns:
             Dictionary with mood analysis and media recommendations
@@ -38,18 +39,21 @@ class MediaService:
                 log.error("Tavily API key not configured for music recommendations")
                 raise ValueError("Tavily API key not configured in .env file")
             
-            # Step 1: Analyze mood from user message using Gemini
-            log.info(f"Analyzing mood for music recommendations")
-            mood_prompt = f'''
-            Analyze the following message from someone experiencing grief or emotional difficulty:
-            "{user_message}"
-            Identify their emotional state and return only a single word or short phrase describing their primary mood.
-            '''
-            mood_response = await self.gemini_service.generate_content(mood_prompt)
-            detected_mood = mood_response.strip()
-            log.info(f"Detected mood: {detected_mood}")
+            # Step 1: Use provided mood or analyze mood from user message
+            if not detected_mood:
+                log.info(f"Analyzing mood for music recommendations")
+                mood_prompt = f'''
+                Analyze the following message and identify the person's primary emotional state:
+                "{user_message}"
+                Return only a single word or short phrase describing their primary mood (like happy, sad, excited, anxious, etc.).
+                '''
+                mood_response = await self.gemini_service.generate_content(mood_prompt)
+                detected_mood = mood_response.strip()
+                log.info(f"Detected mood: {detected_mood}")
+            else:
+                log.info(f"Using provided mood: {detected_mood}")
             
-            # Step 2: Create search query for music based on mood - more adaptive to different moods
+            # Step 2: Create search query for music based on mood - adaptive to all moods
             query_prompt = f'''
             Create a search query for finding YouTube music videos that would support someone feeling "{detected_mood}".
             If the mood is positive (like happy, joyful, excited), suggest uplifting, celebratory music.

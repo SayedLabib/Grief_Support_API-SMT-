@@ -11,38 +11,46 @@ class GriefService:
         self.llm_service = LLMService()
         self.gemini_api_key = settings.gemini_api_key
     
-    async def analyze_and_respond(self, user_message: str):
+    async def analyze_and_respond(self, user_message: str, detected_mood: str = None):
         """
         Analyze user's message and provide emotional support with coping strategies
+        Works with any emotional state (both positive and negative)
         
         Args:
             user_message: User's message describing their feelings or situation
+            detected_mood: Optional pre-detected mood to avoid duplicate analysis
             
         Returns:
             Dictionary with emotional validation, mood analysis, and coping strategies
         """
+        # If detected_mood is provided, include it in the prompt
+        mood_context = f', which indicates they are feeling {detected_mood}' if detected_mood else ''
+        
         prompt = f"""
-        Analyze the following message from someone experiencing grief or emotional difficulty:
+        Analyze the following message from someone{mood_context}:
         "{user_message}"
         
         Format your response as JSON with the following structure:
         {{
             "emotional_validation": "A compassionate validation of their emotions and experience",
             "mood_analysis": {{
-                "detected_mood": "Primary emotional state detected (e.g., sadness, anger, denial)",
+                "detected_mood": "Primary emotional state detected (e.g., joy, sadness, anger, excited, anxious)",
                 "mood_intensity": 7,
-                "grief_stage": "Identified stage of grief if applicable (e.g., denial, anger, bargaining, depression, acceptance)"
+                "grief_stage": "Identified stage of grief if applicable (e.g., denial, anger, bargaining, depression, acceptance), otherwise null"
             }},
             "coping_strategies": [
-                "1. Specific, actionable coping strategy 1",
-                "2. Specific, actionable coping strategy 2",
-                "3. Specific, actionable coping strategy 3", 
-                "4. Specific, actionable coping strategy 4",
-                "5. Specific, actionable coping strategy 5"
+                "1. Specific, actionable strategy 1 appropriate for their emotional state",
+                "2. Specific, actionable strategy 2 appropriate for their emotional state",
+                "3. Specific, actionable strategy 3 appropriate for their emotional state", 
+                "4. Specific, actionable strategy 4 appropriate for their emotional state",
+                "5. Specific, actionable strategy 5 appropriate for their emotional state"
             ]
         }}
         
-        Note for coping_strategies: Format each strategy with a number at the beginning (1., 2., etc.)
+        Notes:
+        - If the mood is positive (like joy, excitement, contentment), provide strategies to maintain and build on these positive emotions
+        - If the mood is negative (like sadness, grief, anxiety), provide supportive coping strategies
+        - Format each strategy with a number at the beginning (1., 2., etc.)
         
         Ensure the response is compassionate, validating, and provides practical strategies.
         Make sure your JSON is properly formatted with double quotes around keys and string values.

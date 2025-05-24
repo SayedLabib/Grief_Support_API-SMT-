@@ -30,25 +30,33 @@ async def unified_response(
 ):
     """
     Process a single request to get multiple responses:
-    - Grief analysis and emotional support
+    - Emotional analysis and support (works for all emotional states, not just grief)
     - Personalized daily plan
     - Media recommendations based on emotional state
     
     The response includes only the requested analysis types.
+    The detected mood is shared between services to avoid redundant analysis.
     """
     response = unifiedResponse()
+    detected_mood = None
     
     try:
-        # Process grief analysis if requested
+        # Process emotional analysis first if requested (to detect mood for other services)
         if request.include_grief_analysis:
             grief_response = await grief_service.analyze_and_respond(request.user_message)
             response.grief_response = grief_response
+            
+            # Extract detected_mood to share with other services
+            if grief_response and "mood_analysis" in grief_response and "detected_mood" in grief_response["mood_analysis"]:
+                detected_mood = grief_response["mood_analysis"]["detected_mood"]
+                log.info(f"Detected mood from grief analysis: {detected_mood}")
         
         # Process daily plan if requested
         if request.include_daily_plan:
             daily_plan = await planner_service.create_daily_plan(
                 request.user_message, 
-                request.plan_preferences
+                request.plan_preferences,
+                detected_mood
             )
             response.daily_plan = daily_plan
         
@@ -57,9 +65,14 @@ async def unified_response(
             media_recommendations = await media_service.get_mood_based_recommendations(
                 request.user_message,
                 request.media_type,
-                request.max_media_results
+                request.max_media_results,
+                detected_mood
             )
             response.media_recommendations = media_recommendations
+            
+            # If we didn't have mood detection from grief analysis, get it from media recommendations
+            if not detected_mood and media_recommendations and "detected_mood" in media_recommendations:
+                detected_mood = media_recommendations["detected_mood"]
         
         return response
     except Exception as e:
