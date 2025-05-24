@@ -49,15 +49,18 @@ class MediaService:
             detected_mood = mood_response.strip()
             log.info(f"Detected mood: {detected_mood}")
             
-            # Step 2: Create search query for music based on mood
+            # Step 2: Create search query for music based on mood - more adaptive to different moods
             query_prompt = f'''
-            Create a search query for finding YouTube music videos that would help someone feeling "{detected_mood}".
-            The music should be therapeutic and supportive for this emotional state.
-            Return only the search query text, nothing else.
-            Example: "calming piano music for anxiety and stress relief"
+            Create a search query for finding YouTube music videos that would support someone feeling "{detected_mood}".
+            If the mood is positive (like happy, joyful, excited), suggest uplifting, celebratory music.
+            If the mood is negative (like sad, angry, grieving), suggest soothing, healing music.
+            Return only the search query text, nothing else (no quotes).
+            Examples:
+            - For grief: "healing piano music for grief and loss"
+            - For joyful: "upbeat celebration music for happy moments"
             '''
             query_response = await self.gemini_service.generate_content(query_prompt)
-            search_query = query_response.strip()
+            search_query = query_response.strip().replace('"', '')  # Remove quotes if present
             log.info(f"Generated search query: {search_query}")
             
             # Step 3: Use Tavily to search for YouTube music videos

@@ -10,6 +10,7 @@ class YouTubeService:
     def __init__(self):
         # Use environment variable directly to ensure we have the latest value
         self.tavily_api_key = os.getenv("TAVILY_API_KEY") or settings.tavily_api_key
+        # Use the correct Tavily API endpoint
         self.tavily_search_url = "https://api.tavily.com/search"
         
     async def search_videos(self, query: str, max_results: int = 5):
@@ -31,14 +32,15 @@ class YouTubeService:
             log.info(f"Searching for music with Tavily API: {query}")
             search_query = f"{query} youtube music therapy videos"
             
+            # Use the correct authentication format for Tavily API
             headers = {
                 "Content-Type": "application/json",
-                "Authorization": f"Bearer {self.tavily_api_key}"  # Correct format for Tavily API
+                "Authorization": f"Bearer {self.tavily_api_key}"  # This is the correct format
             }
             
             payload = {
                 "query": search_query,
-                "search_depth": "advanced",
+                "search_depth": "advanced", 
                 "include_domains": ["youtube.com"],
                 "max_results": max_results
             }
@@ -46,6 +48,7 @@ class YouTubeService:
             async with aiohttp.ClientSession() as session:
                 log.info(f"Using Tavily API key: {self.tavily_api_key[:5]}...")
                 log.info(f"Headers: Authorization: Bearer {self.tavily_api_key[:5]}...")
+                log.info(f"Tavily Search URL: {self.tavily_search_url}")
                 async with session.post(
                     self.tavily_search_url,
                     headers=headers,
